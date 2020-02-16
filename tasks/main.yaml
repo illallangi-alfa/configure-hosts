@@ -1,0 +1,12 @@
+---
+- name: "Update /etc/hosts"
+  template:
+    src:  "{{ item.src | default((item.dest | basename ()) + '.j2')}}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - dest:  "/etc/hosts"
+  notify: "reboot"
+  when:
+    - "inventory_hostname is defined"
+  tags:
+    - "hosts"

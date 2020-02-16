@@ -1,0 +1,9 @@
+127.0.0.1       localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1             localhost localhost.localdomain localhost6 localhost6.localdomain6
+{% for kubernetes_hostname in hostvars | json_query('*.kubernetes_hostname') | unique | sort %}
+
+{{ hostvars[(hostvars | json_query("{hosts:*}|hosts[?kubernetes_hostname=='" + kubernetes_hostname + "'].inventory_hostname") | sort)[0]]['ansible_ssh_host'] }}{% for n in range(15 - (hostvars[(hostvars | json_query("{hosts:*}|hosts[?kubernetes_hostname=='" + kubernetes_hostname + "'].inventory_hostname") | sort)[0]]['ansible_ssh_host'] | length)) %} {% endfor %} {{ kubernetes_hostname }} {{ kubernetes_hostname | regex_replace('\..*$', '') }}
+{% for host in hostvars | json_query("{hosts:*}|hosts[?kubernetes_hostname=='" + kubernetes_hostname + "'].inventory_hostname") | sort%}
+{{ hostvars[host]['ansible_ssh_host'] }}{% for n in range(15 - (hostvars[host]['ansible_ssh_host'] | length)) %} {% endfor %} {{ host }} {{ host | regex_replace('\..*$', '') }}
+{% endfor %}
+{% endfor %}
