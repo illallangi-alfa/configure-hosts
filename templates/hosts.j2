@@ -1,9 +1,18 @@
-127.0.0.1       localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1             localhost localhost.localdomain localhost6 localhost6.localdomain6
-{% for kubernetes_hostname in hostvars | json_query('*.kubernetes_hostname') | unique | sort %}
+# localhost
+127.0.0.1                        localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1                              localhost localhost.localdomain localhost6 localhost6.localdomain6
 
-{{ hostvars[(hostvars | json_query("{hosts:*}|hosts[?kubernetes_hostname=='" + kubernetes_hostname + "'].inventory_hostname") | sort)[0]]['ansible_ssh_host'] }}{% for n in range(15 - (hostvars[(hostvars | json_query("{hosts:*}|hosts[?kubernetes_hostname=='" + kubernetes_hostname + "'].inventory_hostname") | sort)[0]]['ansible_ssh_host'] | length)) %} {% endfor %} {{ kubernetes_hostname }} {{ kubernetes_hostname | regex_replace('\..*$', '') }}
-{% for host in hostvars | json_query("{hosts:*}|hosts[?kubernetes_hostname=='" + kubernetes_hostname + "'].inventory_hostname") | sort%}
-{{ hostvars[host]['ansible_ssh_host'] }}{% for n in range(15 - (hostvars[host]['ansible_ssh_host'] | length)) %} {% endfor %} {{ host }} {{ host | regex_replace('\..*$', '') }}
+# k3s clusters
+{% for k in hostvars | json_query('{hosts:*}|hosts[?k3s.hostname&&k3s.ipv4].k3s') | unique | sort %}
+{{ k.ipv4 | ipaddr('address') }}{% for n in range(32 - (k.ipv4 | ipaddr('address') | length)) %} {% endfor %} {{ k.hostname }} {{ k.hostname | regex_replace('\..*$', '') }}
 {% endfor %}
+
+# k8s clusters
+{% for k in hostvars | json_query('{hosts:*}|hosts[?k8s.hostname&&k8s.ipv4].k8s') | unique | sort %}
+{{ k.ipv4 | ipaddr('address') }}{% for n in range(32 - (k.ipv4 | ipaddr('address') | length)) %} {% endfor %} {{ k.hostname }} {{ k.hostname | regex_replace('\..*$', '') }}
+{% endfor %}
+
+# hosts 
+{% for host in hostvars | json_query("{hosts:*}|hosts[].inventory_hostname") | sort%}
+{{ hostvars[host]['ansible_ssh_host'] }}{% for n in range(32 - (hostvars[host]['ansible_ssh_host'] | length)) %} {% endfor %} {{ host }} {{ host | regex_replace('\..*$', '') }}
 {% endfor %}
