@@ -8,7 +8,7 @@
 {% endfor %}
 
 # k8s clusters
-{% for k in hostvars | json_query('{hosts:*}|hosts[?k8s.hostname&&k8s.ipv4].k8s') | unique | sort %}
+{% for k in hostvars | json_query('{hosts:*}|hosts[?k8s.hostname&&k8s.ipv4].k8s') | unique | sort(attribute='hostname') %}
 {{ k.ipv4 | ipaddr('address') }}{% for n in range(32 - (k.ipv4 | ipaddr('address') | length)) %} {% endfor %} {{ k.hostname }} {{ k.hostname | regex_replace('\..*$', '') }}
 {% endfor %}
 
